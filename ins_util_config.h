@@ -37,6 +37,15 @@ typedef enum {
     CONFIG_TYPE_NUM,
 } CONFIG_TYPE_e;
 
+/*校验方式*/
+typedef enum {
+    CONFIG_VAL_CHECK_TYPE_NULL = 0,
+    CONFIG_VAL_CHECK_TYPE_RANGE,
+    CONFIG_VAL_CHECK_TYPE_EQUAL,
+    CONFIG_VAL_CHECK_TYPE_UNEQUAL,
+    CONFIG_VAL_CHECK_TYPE_CUSTOM,
+} CONFIG_VAL_CHECK_TYPE_e;
+
 /*参数区数值定义*/
 typedef struct __packed {
     uint32_t    version;
@@ -54,9 +63,13 @@ typedef struct __packed {
 
 /*参数数据描述*/
 typedef struct {
-    CONFIG_VALUE_TYPE_e val_type;
-    uint16_t            length;
-    uint32_t            offset;
+    CONFIG_VALUE_TYPE_e     val_type;
+    uint16_t                length;
+    uint32_t                offset;
+    CONFIG_VAL_CHECK_TYPE_e check_type;
+    void                    *check_val;
+    int32_t                 check_len;
+    int32_t                 (*check_fun)(CONFIG_TYPE_e type, void *val);
 } CONFIG_UNIT_VALUE_DESCRIBE_t;
 
 /*参数区文件是否存在*/
@@ -71,7 +84,11 @@ int32_t Ins_Unit_Config_Read_Val(CONFIG_TYPE_e type, void *val);
 int32_t Ins_Unit_Config_Write_Val(CONFIG_TYPE_e type, void *val);
 /*读取所有参数区数值*/
 int32_t Ins_Unit_Config_Read_Config_File(config_val_t *val);
+/*写入整个参数区*/
+int32_t Ins_Unit_Config_Write_Config_File(config_val_t *val);
 /*遍历整个参数区*/
 int32_t Ins_Unit_Config_Show_Config_Val(void);
+/*校准参数区数值*/
+int32_t Ins_Unit_Config_Correct_Val(void);
 
 #endif
