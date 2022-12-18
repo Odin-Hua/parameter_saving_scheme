@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "ins_util_config.h"
+#include "util_config.h"
 
 /*
     剩余功能:
@@ -36,16 +36,16 @@ static int32_t test_case_range_check(void)
         .test_int64_t   = (int64_t)30,
     };
 
-    Ins_Unit_Config_Clear();                            //remove file
-    if (Ins_Unit_Config_Is_Exist() == 0) {
-        Ins_Unit_Config_Creat_By_Default_Val();         //create file
+    Unit_Config_Clear();                            //remove file
+    if (Unit_Config_Is_Exist() == 0) {
+        Unit_Config_Creat_By_Default_Val();         //create file
     }
-    Ins_Unit_Config_Show_Config_Val();                  //show default val
-    Ins_Unit_Config_Write_Config_File(&val);            //write error val
-    Ins_Unit_Config_Show_Config_Val();                  //show error val
-    Ins_Unit_Config_Correct_Val();                      //correct val
-    Ins_Unit_Config_Show_Config_Val();                  //show val affter correct
-    Ins_Unit_Config_Correct_Val();                      //correct val again
+    Unit_Config_Show_Config_Val();                  //show default val
+    Unit_Config_Write_Config_File(&val);            //write error val
+    Unit_Config_Show_Config_Val();                  //show error val
+    Unit_Config_Correct_Val();                      //correct val
+    Unit_Config_Show_Config_Val();                  //show val affter correct
+    Unit_Config_Correct_Val();                      //correct val again
 
     return 0;
 }

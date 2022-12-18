@@ -1,5 +1,5 @@
-#ifndef __INS_UTIL_CONFIG_H_
-#define __INS_UTIL_CONFIG_H_
+#ifndef __UTIL_CONFIG_H_
+#define __UTIL_CONFIG_H_
 
 #include<stdint.h>
 #define __packed    __attribute__((packed))
@@ -73,22 +73,22 @@ typedef struct {
 } CONFIG_UNIT_VALUE_DESCRIBE_t;
 
 /*参数区文件是否存在*/
-int32_t Ins_Unit_Config_Is_Exist(void);
+int32_t Unit_Config_Is_Exist(void);
 /*删除参数区文件*/
-int32_t Ins_Unit_Config_Clear(void);
+int32_t Unit_Config_Clear(void);
 /*用默认值创建参数区文件*/
-int32_t Ins_Unit_Config_Creat_By_Default_Val(void);
+int32_t Unit_Config_Creat_By_Default_Val(void);
 /*读取某个参数的数值*/
-int32_t Ins_Unit_Config_Read_Val(CONFIG_TYPE_e type, void *val);
+int32_t Unit_Config_Read_Val(CONFIG_TYPE_e type, void *val);
 /*写入数值到某个参数*/
-int32_t Ins_Unit_Config_Write_Val(CONFIG_TYPE_e type, void *val);
+int32_t Unit_Config_Write_Val(CONFIG_TYPE_e type, void *val);
 /*读取所有参数区数值*/
-int32_t Ins_Unit_Config_Read_Config_File(config_val_t *val);
+int32_t Unit_Config_Read_Config_File(config_val_t *val);
 /*写入整个参数区*/
-int32_t Ins_Unit_Config_Write_Config_File(config_val_t *val);
+int32_t Unit_Config_Write_Config_File(config_val_t *val);
 /*遍历整个参数区*/
-int32_t Ins_Unit_Config_Show_Config_Val(void);
+int32_t Unit_Config_Show_Config_Val(void);
 /*校准参数区数值*/
-int32_t Ins_Unit_Config_Correct_Val(void);
+int32_t Unit_Config_Correct_Val(void);
 
 #endif
