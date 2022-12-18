@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "util_config.h"
 
 #define CONFIG_PATH     "config"            /*参数区文件*/
@@ -8,7 +10,9 @@ typedef struct {
     int32_t     exist_flag;
 } g_config_ctrl_t;                          /*参数区全局操作变量定义*/
 /*范围检测*/
-static int32_t RangeCheck_Fun(CONFIG_TYPE_e type, void *val);
+static int32_t RangeCheck_Fun(void *config_type, void *val);
+/*版本号自定义校验*/
+static int32_t Version_CustomCheck_Fun(void *file, void *val);
 
 /*参数区校验值*/
 uint8_t     test_uint8_t_check_val[10] = {10, 20, 30, 40, 50, 60, 90, 120, 130, 150};
@@ -21,10 +25,11 @@ fp32        test_fp32_check_val[4]     = {(fp32)0, (fp32)12, (fp32)50, (fp32)100
 fp64        test_fp64_check_val[4]     = {(fp64)-11111111, (fp64)0, (fp64)1, (fp64)10};
 uint64_t    test_uint64_t_check_val[2] = {(uint64_t)0xFFFFFFFFFFFFFFFULL, (uint64_t)0x9FFFFFFFFFFFFFFFULL};
 int64_t     test_int64_t_check_val[4]  = {(int64_t)-0x1FFFFFFFFFFFFFFFLL, (int64_t)0, (int64_t)1, (int64_t)10};
+// fp32        update_check_check_val[2]  = {(fp32)0, (fp32)80};
 
 /*参数区数值描述: CONFIG_VALUE_TYPE_e, length, offset, CONFIG_VAL_CHECK_TYPE_e, check_val, check_len, check_fun*/
 CONFIG_UNIT_VALUE_DESCRIBE_t g_config_val_describe_table[] = {
-    [CONFIG_TYPE_VERSION]      = {CONFIG_VALUE_TYPE_UINT32,    4,   0,  CONFIG_VAL_CHECK_TYPE_NULL,     NULL,                       0,   NULL},
+    [CONFIG_TYPE_VERSION]      = {CONFIG_VALUE_TYPE_UINT32,    4,   0,  CONFIG_VAL_CHECK_TYPE_CUSTOM_VERSION,   NULL,               0,   Version_CustomCheck_Fun},
     [CONFIG_TYPE_TEST_UINT8]   = {CONFIG_VALUE_TYPE_UINT8,     1,   4,  CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint8_t_check_val,     5,   RangeCheck_Fun},
     [CONFIG_TYPE_TEST_INT8]    = {CONFIG_VALUE_TYPE_INT8,      1,   5,  CONFIG_VAL_CHECK_TYPE_RANGE,    test_int8_t_check_val,      2,   RangeCheck_Fun},
     [CONFIG_TYPE_TEST_UINT32]  = {CONFIG_VALUE_TYPE_UINT32,    4,   6,  CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint32_t_check_val,    1,   RangeCheck_Fun},
@@ -35,6 +40,7 @@ CONFIG_UNIT_VALUE_DESCRIBE_t g_config_val_describe_table[] = {
     [CONFIG_TYPE_TEST_FP64]    = {CONFIG_VALUE_TYPE_FP64,      8,   22, CONFIG_VAL_CHECK_TYPE_RANGE,    test_fp64_check_val,        2,   RangeCheck_Fun},
     [CONFIG_TYPE_TEST_UINT64]  = {CONFIG_VALUE_TYPE_UINT64,    8,   30, CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint64_t_check_val,    1,   RangeCheck_Fun},
     [CONFIG_TYPE_TEST_INT64]   = {CONFIG_VALUE_TYPE_INT64,     8,   38, CONFIG_VAL_CHECK_TYPE_RANGE,    test_int64_t_check_val,     2,   RangeCheck_Fun},
+    // [CONFIG_TYPE_UPDATE_TEST]  = {CONFIG_VALUE_TYPE_FP32,      4,   46, CONFIG_VAL_CHECK_TYPE_RANGE,    update_check_check_val,     1,   RangeCheck_Fun},
 };
 /*参数区默认值*/
 config_val_t g_config_default_val = {
@@ -49,6 +55,7 @@ config_val_t g_config_default_val = {
     .test_fp64_t    = (fp64)-10241024.1024,
     .test_uint64_t  = (uint64_t)10376293541461623000ULL,    /*0x8FFFFFFFFFFFFFFF*/ 
     .test_int64_t   = (int64_t)-1152921504606847000LL,      /*-0xFFFFFFFFFFFFFFF*/
+    // .update_test    = (fp32)12.1200,
 };
 /*参数区全局操作变量*/
 g_config_ctrl_t g_config_ctrl;
@@ -307,10 +314,12 @@ int32_t Unit_Config_Correct_Val(void)
             case CONFIG_VAL_CHECK_TYPE_NULL:
             case CONFIG_VAL_CHECK_TYPE_EQUAL:
             case CONFIG_VAL_CHECK_TYPE_UNEQUAL:
-            case CONFIG_VAL_CHECK_TYPE_CUSTOM:
+                break;
+            case CONFIG_VAL_CHECK_TYPE_CUSTOM_VERSION:
+                need_to_correct |= g_config_val_describe_table[i].check_fun(file, &val);
                 break;
             case CONFIG_VAL_CHECK_TYPE_RANGE:
-                need_to_correct = g_config_val_describe_table[i].check_fun((CONFIG_TYPE_e)i, p_val);
+                need_to_correct |= g_config_val_describe_table[i].check_fun(&i, p_val);
                 break;
             default:
                 break;
@@ -337,8 +346,9 @@ _CORRECT_VAL_DONE:
 }
 
 /*范围检测*/
-static int32_t RangeCheck_Fun(CONFIG_TYPE_e type, void *val)
+static int32_t RangeCheck_Fun(void *config_type, void *val)
 {
+    CONFIG_TYPE_e type = (*(CONFIG_TYPE_e*)(config_type));
     if (type > CONFIG_TYPE_NUM || val == NULL) {
         printf("%s err input\n", __func__);
         return -1;
@@ -456,4 +466,40 @@ _CORRECT_OPERA:
     }
 
     return ret;
+}
+
+static int32_t Version_CustomCheck_Fun(void *file, void *val)
+{
+    if (file == NULL || val == NULL) {
+        printf("%s err input\n", __func__);
+        return -1;
+    }
+
+    int32_t fd = fileno((FILE*)file);
+    int32_t need_to_correct = 0;
+    struct stat statbuf;
+    uint32_t file_size = 0, default_file_size = 0;
+    uint8_t *p_file_val = (uint8_t*)(val);
+    uint8_t *p_default_val = (uint8_t*)(&g_config_default_val);
+    uint32_t ver = ((config_val_t*)(p_file_val))->version;
+    uint32_t default_ver = g_config_default_val.version;
+
+    if (default_ver == ver) {
+        need_to_correct = 0;
+        goto _VERSION_CHECK_DONE;
+    }
+    stat(CONFIG_PATH, &statbuf);
+    file_size = statbuf.st_size;
+    default_file_size = sizeof(config_val_t);
+    printf("%s ver: %u, %u; size: %d, %d\n", __func__, ver, default_ver, file_size, default_file_size);
+    if (file_size < default_file_size) {    /*config file size grow*/
+        memcpy((void*)(p_file_val+file_size), (void*)(p_default_val+file_size), (default_file_size-file_size));
+    } else if (file_size > default_file_size) {
+        ftruncate(fd, default_file_size);
+    }
+    ((config_val_t*)(val))->version = default_ver;
+    need_to_correct = 1;
+
+_VERSION_CHECK_DONE:
+    return need_to_correct;
 }

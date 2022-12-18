@@ -34,6 +34,7 @@ typedef enum {
     CONFIG_TYPE_TEST_FP64,
     CONFIG_TYPE_TEST_UINT64,
     CONFIG_TYPE_TEST_INT64,
+    // CONFIG_TYPE_UPDATE_TEST,
     CONFIG_TYPE_NUM,
 } CONFIG_TYPE_e;
 
@@ -43,7 +44,7 @@ typedef enum {
     CONFIG_VAL_CHECK_TYPE_RANGE,
     CONFIG_VAL_CHECK_TYPE_EQUAL,
     CONFIG_VAL_CHECK_TYPE_UNEQUAL,
-    CONFIG_VAL_CHECK_TYPE_CUSTOM,
+    CONFIG_VAL_CHECK_TYPE_CUSTOM_VERSION,
 } CONFIG_VAL_CHECK_TYPE_e;
 
 /*参数区数值定义*/
@@ -59,6 +60,7 @@ typedef struct __packed {
     fp64        test_fp64_t;
     uint64_t    test_uint64_t;
     int64_t     test_int64_t;
+    // fp32        update_test;
 } config_val_t;
 
 /*参数数据描述*/
@@ -69,7 +71,7 @@ typedef struct {
     CONFIG_VAL_CHECK_TYPE_e check_type;
     void                    *check_val;
     int32_t                 check_len;
-    int32_t                 (*check_fun)(CONFIG_TYPE_e type, void *val);
+    int32_t                 (*check_fun)(void*, void*);
 } CONFIG_UNIT_VALUE_DESCRIBE_t;
 
 /*参数区文件是否存在*/

@@ -4,22 +4,24 @@
 
 /*
     剩余功能:
-    1. 枚举校验, 自定义校验
+    1. 枚举校验
     2. 支持自定义数据结构
     3. 写入时校验
 */
+/*范围校验测试用例*/
 static int32_t test_case_range_check(void);
+/*自定义校验以及参数区版本更新测试用例*/
+static int32_t test_case_version_update_custom_check(void);
 
 int main()
 {
-    config_val_t val;
-
-    test_case_range_check();
+    test_case_version_update_custom_check();
 
     system("pause");
     return 0;
 }
 
+/*范围校验测试用例*/
 static int32_t test_case_range_check(void)
 {
     config_val_t val = {
@@ -46,6 +48,43 @@ static int32_t test_case_range_check(void)
     Unit_Config_Correct_Val();                      //correct val
     Unit_Config_Show_Config_Val();                  //show val affter correct
     Unit_Config_Correct_Val();                      //correct val again
+
+    return 0;
+}
+
+/*自定义校验以及参数区版本更新测试用例*/
+static int32_t test_case_version_update_custom_check(void)
+{
+    #define STEP    (1)
+    /*==================first===================*/
+    /*modify version and delete config val(update_test);
+      change STEP 1, recompile*/
+#if (STEP == 1)
+    Unit_Config_Clear();                            //remove file
+    if (Unit_Config_Is_Exist() == 0) {
+        Unit_Config_Creat_By_Default_Val();         //create file
+    }
+    Unit_Config_Show_Config_Val();                  //show default val
+#endif
+    /*==================second==================*/
+    /*simulate upgrade, modify version and add config val(update_test);
+      change STEP 3, recompile*/
+
+    /*==================thrid==================*/
+#if (STEP == 3)
+    Unit_Config_Correct_Val();                      //correct val
+    Unit_Config_Show_Config_Val();                  //show default val
+#endif
+
+    /*==================fourth==================*/
+    /*simulate demote, modify version and delete config val(update_test);
+    change STEP 5, recompile*/
+
+    /*==================fifth==================*/
+#if (STEP == 5)
+    Unit_Config_Correct_Val();                      //correct val
+    Unit_Config_Show_Config_Val();                  //show default val
+#endif
 
     return 0;
 }
