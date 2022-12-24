@@ -41,6 +41,7 @@ CONFIG_UNIT_VALUE_DESCRIBE_t g_config_val_describe_table[] = {
     [CONFIG_TYPE_TEST_FP64]    = {CONFIG_VALUE_TYPE_FP64,      8,   22, CONFIG_VAL_CHECK_TYPE_RANGE,    test_fp64_check_val,        2,   RangeCheck_Fun},
     [CONFIG_TYPE_TEST_UINT64]  = {CONFIG_VALUE_TYPE_UINT64,    8,   30, CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint64_t_check_val,    1,   RangeCheck_Fun},
     [CONFIG_TYPE_TEST_INT64]   = {CONFIG_VALUE_TYPE_INT64,     8,   38, CONFIG_VAL_CHECK_TYPE_RANGE,    test_int64_t_check_val,     2,   RangeCheck_Fun},
+    [CONFIG_TYPE_TEST_CUSTOM]  = {CONFIG_VALUE_TYPE_CUSTOM,    18,  46, CONFIG_VAL_CHECK_TYPE_NULL,     NULL,                       0,   NULL},
 };
 /*参数区默认值*/
 config_val_t g_config_default_val = {
@@ -55,6 +56,11 @@ config_val_t g_config_default_val = {
     .test_fp64_t    = (fp64)-10241024.1024,
     .test_uint64_t  = (uint64_t)10376293541461623000ULL,    /*0x8FFFFFFFFFFFFFFF*/ 
     .test_int64_t   = (int64_t)-1152921504606847000LL,      /*-0xFFFFFFFFFFFFFFF*/
+    .custom = {
+        .name   = {'l', 'i', ' ','h', 'u', 'a', '\0'},
+        .tall   = (fp32)223.23,
+        .weight = (fp32)135.55,
+    },
 };
 /*参数区全局操作变量*/
 g_config_ctrl_t g_config_ctrl;
@@ -275,6 +281,10 @@ int32_t Unit_Config_Show_Config_Val(void)
                 int64_t val = (*(int64_t*)(p_val));
                 printf("%d. int64_t :   %lld\n", i, val);
                 break;
+            }
+            case CONFIG_VALUE_TYPE_CUSTOM: {
+                CUSTOM_VAL_t val = (*(CUSTOM_VAL_t*)(p_val));
+                printf("%d. name: %s, tall: %.4lf(cm), weight: %.4lf(kg)\n", i, val.name, val.tall, val.weight);
             }
             default:
                 break;

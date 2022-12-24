@@ -18,6 +18,7 @@ typedef enum {
     CONFIG_VALUE_TYPE_UINT16,
     CONFIG_VALUE_TYPE_INT8,
     CONFIG_VALUE_TYPE_UINT8,
+    CONFIG_VALUE_TYPE_CUSTOM,
     CONFIG_VALUE_TYPE_NUM,
 } CONFIG_VALUE_TYPE_e;
 
@@ -34,6 +35,7 @@ typedef enum {
     CONFIG_TYPE_TEST_FP64,
     CONFIG_TYPE_TEST_UINT64,
     CONFIG_TYPE_TEST_INT64,
+    CONFIG_TYPE_TEST_CUSTOM,
     CONFIG_TYPE_NUM,
 } CONFIG_TYPE_e;
 
@@ -48,17 +50,23 @@ typedef enum {
 
 /*参数区数值定义*/
 typedef struct __packed {
-    uint32_t    version;
-    uint8_t     test_uint8_t;
-    int8_t      test_int8_t;
-    uint32_t    test_uint32_t;
-    int32_t     test_int32_t;
-    uint16_t    test_uint16_t;
-    int16_t     test_int16_t;
-    fp32        test_fp32_t;
-    fp64        test_fp64_t;
-    uint64_t    test_uint64_t;
-    int64_t     test_int64_t;
+    int8_t  name[10];
+    fp32    tall;
+    fp32    weight;
+} CUSTOM_VAL_t;
+typedef struct __packed {
+    uint32_t        version;
+    uint8_t         test_uint8_t;
+    int8_t          test_int8_t;
+    uint32_t        test_uint32_t;
+    int32_t         test_int32_t;
+    uint16_t        test_uint16_t;
+    int16_t         test_int16_t;
+    fp32            test_fp32_t;
+    fp64            test_fp64_t;
+    uint64_t        test_uint64_t;
+    int64_t         test_int64_t;
+    CUSTOM_VAL_t    custom;
 } config_val_t;
 
 /*参数数据描述*/

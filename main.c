@@ -1,22 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
+# include <string.h>
 #include "util_config.h"
 
-/*
-    剩余功能:
-    1. 支持自定义数据结构
-    2. 写入时校验
-*/
 /*范围校验测试用例*/
 static int32_t test_case_range_check(void);
 /*自定义校验以及参数区版本更新测试用例*/
 static int32_t test_case_version_update_custom_check(void);
 /*枚举(匹配相等)校验测试用例*/
 static int32_t test_case_equal_check(void);
+/*自定义数据结构测试用例*/
+static int32_t test_case_custom_val(void);
 
 int main()
 {
-    test_case_equal_check();
+    test_case_custom_val();
 
     system("pause");
     return 0;
@@ -105,6 +103,27 @@ static int32_t test_case_equal_check(void)
     Unit_Config_Correct_Val();                          //correct val
     Unit_Config_Show_Config_Val();                      //show val affter correct
     Unit_Config_Correct_Val();                          //correct val again
+
+    return 0;
+}
+
+static int32_t test_case_custom_val(void)
+{
+    CUSTOM_VAL_t val = {
+        .name = {'j', 'c', ' ','s', 'a', 'n', '\0'},
+        .tall   = (fp32)147.54,
+        .weight = (fp32)45.58,
+    };
+
+    Unit_Config_Clear();                                //remove file
+    if (Unit_Config_Is_Exist() == 0) {
+        Unit_Config_Creat_By_Default_Val();             //create file
+    }
+    Unit_Config_Show_Config_Val();                       //show default val
+    Unit_Config_Write_Val(CONFIG_TYPE_TEST_CUSTOM, &val);//write val
+    memset(&val, 0, sizeof(CUSTOM_VAL_t));               //clear val
+    Unit_Config_Read_Val(CONFIG_TYPE_TEST_CUSTOM, &val); //read val
+    printf("name: %s, tall: %.4lf(cm), weight: %.4lf(kg)\n", val.name, val.tall, val.weight);
 
     return 0;
 }
