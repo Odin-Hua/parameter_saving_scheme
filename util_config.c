@@ -11,11 +11,13 @@ typedef struct {
 } g_config_ctrl_t;                          /*参数区全局操作变量定义*/
 /*范围检测*/
 static int32_t RangeCheck_Fun(void *config_type, void *val);
+/*匹配相等校验*/
+static int32_t EqualCheck_Fun(void *config_type, void *val);
 /*版本号自定义校验*/
 static int32_t Version_CustomCheck_Fun(void *file, void *val);
 
 /*参数区校验值*/
-uint8_t     test_uint8_t_check_val[10] = {10, 20, 30, 40, 50, 60, 90, 120, 130, 150};
+uint8_t     test_uint8_t_check_val[10] = {10, 20, 30, 40, 50, 60, 90, 120, 143, 150};
 int8_t      test_int8_t_check_val[4]   = {-50, -30, -20, 20};
 uint32_t    test_uint32_t_check_val[2] = {0xFFFFFFF, 0x9FFFFFFF};
 int32_t     test_int32_t_check_val[4]  = {-0x1FFFFFFF, 0, 1, 10};
@@ -25,12 +27,11 @@ fp32        test_fp32_check_val[4]     = {(fp32)0, (fp32)12, (fp32)50, (fp32)100
 fp64        test_fp64_check_val[4]     = {(fp64)-11111111, (fp64)0, (fp64)1, (fp64)10};
 uint64_t    test_uint64_t_check_val[2] = {(uint64_t)0xFFFFFFFFFFFFFFFULL, (uint64_t)0x9FFFFFFFFFFFFFFFULL};
 int64_t     test_int64_t_check_val[4]  = {(int64_t)-0x1FFFFFFFFFFFFFFFLL, (int64_t)0, (int64_t)1, (int64_t)10};
-// fp32        update_check_check_val[2]  = {(fp32)0, (fp32)80};
 
 /*参数区数值描述: CONFIG_VALUE_TYPE_e, length, offset, CONFIG_VAL_CHECK_TYPE_e, check_val, check_len, check_fun*/
 CONFIG_UNIT_VALUE_DESCRIBE_t g_config_val_describe_table[] = {
     [CONFIG_TYPE_VERSION]      = {CONFIG_VALUE_TYPE_UINT32,    4,   0,  CONFIG_VAL_CHECK_TYPE_CUSTOM_VERSION,   NULL,               0,   Version_CustomCheck_Fun},
-    [CONFIG_TYPE_TEST_UINT8]   = {CONFIG_VALUE_TYPE_UINT8,     1,   4,  CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint8_t_check_val,     5,   RangeCheck_Fun},
+    [CONFIG_TYPE_TEST_UINT8]   = {CONFIG_VALUE_TYPE_UINT8,     1,   4,  CONFIG_VAL_CHECK_TYPE_EQUAL,    test_uint8_t_check_val,     10,  EqualCheck_Fun},
     [CONFIG_TYPE_TEST_INT8]    = {CONFIG_VALUE_TYPE_INT8,      1,   5,  CONFIG_VAL_CHECK_TYPE_RANGE,    test_int8_t_check_val,      2,   RangeCheck_Fun},
     [CONFIG_TYPE_TEST_UINT32]  = {CONFIG_VALUE_TYPE_UINT32,    4,   6,  CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint32_t_check_val,    1,   RangeCheck_Fun},
     [CONFIG_TYPE_TEST_INT32]   = {CONFIG_VALUE_TYPE_INT32,     4,   10, CONFIG_VAL_CHECK_TYPE_RANGE,    test_int32_t_check_val,     2,   RangeCheck_Fun},
@@ -40,7 +41,6 @@ CONFIG_UNIT_VALUE_DESCRIBE_t g_config_val_describe_table[] = {
     [CONFIG_TYPE_TEST_FP64]    = {CONFIG_VALUE_TYPE_FP64,      8,   22, CONFIG_VAL_CHECK_TYPE_RANGE,    test_fp64_check_val,        2,   RangeCheck_Fun},
     [CONFIG_TYPE_TEST_UINT64]  = {CONFIG_VALUE_TYPE_UINT64,    8,   30, CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint64_t_check_val,    1,   RangeCheck_Fun},
     [CONFIG_TYPE_TEST_INT64]   = {CONFIG_VALUE_TYPE_INT64,     8,   38, CONFIG_VAL_CHECK_TYPE_RANGE,    test_int64_t_check_val,     2,   RangeCheck_Fun},
-    // [CONFIG_TYPE_UPDATE_TEST]  = {CONFIG_VALUE_TYPE_FP32,      4,   46, CONFIG_VAL_CHECK_TYPE_RANGE,    update_check_check_val,     1,   RangeCheck_Fun},
 };
 /*参数区默认值*/
 config_val_t g_config_default_val = {
@@ -55,7 +55,6 @@ config_val_t g_config_default_val = {
     .test_fp64_t    = (fp64)-10241024.1024,
     .test_uint64_t  = (uint64_t)10376293541461623000ULL,    /*0x8FFFFFFFFFFFFFFF*/ 
     .test_int64_t   = (int64_t)-1152921504606847000LL,      /*-0xFFFFFFFFFFFFFFF*/
-    // .update_test    = (fp32)12.1200,
 };
 /*参数区全局操作变量*/
 g_config_ctrl_t g_config_ctrl;
@@ -312,12 +311,12 @@ int32_t Unit_Config_Correct_Val(void)
     for (i = 0; i < CONFIG_TYPE_NUM; i ++) {
         switch (g_config_val_describe_table[i].check_type) {
             case CONFIG_VAL_CHECK_TYPE_NULL:
-            case CONFIG_VAL_CHECK_TYPE_EQUAL:
             case CONFIG_VAL_CHECK_TYPE_UNEQUAL:
                 break;
             case CONFIG_VAL_CHECK_TYPE_CUSTOM_VERSION:
                 need_to_correct |= g_config_val_describe_table[i].check_fun(file, &val);
                 break;
+            case CONFIG_VAL_CHECK_TYPE_EQUAL:
             case CONFIG_VAL_CHECK_TYPE_RANGE:
                 need_to_correct |= g_config_val_describe_table[i].check_fun(&i, p_val);
                 break;
@@ -468,6 +467,7 @@ _CORRECT_OPERA:
     return ret;
 }
 
+/*版本号自定义校验*/
 static int32_t Version_CustomCheck_Fun(void *file, void *val)
 {
     if (file == NULL || val == NULL) {
@@ -502,4 +502,127 @@ static int32_t Version_CustomCheck_Fun(void *file, void *val)
 
 _VERSION_CHECK_DONE:
     return need_to_correct;
+}
+
+/*匹配相等校验*/
+static int32_t EqualCheck_Fun(void *config_type, void *val)
+{
+    CONFIG_TYPE_e type = (*(CONFIG_TYPE_e*)(config_type));
+    if (type > CONFIG_TYPE_NUM || val == NULL) {
+        printf("%s err input\n", __func__);
+        return -1;
+    }
+
+    CONFIG_VALUE_TYPE_e val_type    = g_config_val_describe_table[type].val_type;
+    int32_t             check_len   = g_config_val_describe_table[type].check_len;
+    int32_t i, ret, not_need_to_correct = 0;
+
+    for (i = 0; i < check_len; i ++) {
+        switch (val_type) {
+            case CONFIG_VALUE_TYPE_UINT8: {
+                uint8_t *p_check_val = (uint8_t*)g_config_val_describe_table[type].check_val;
+                uint8_t _val = (*(uint8_t*)(val));
+                if (p_check_val[i] == _val) {
+                    not_need_to_correct = 1;
+                    goto _CORRECT_OPERA;
+                }
+                break;
+            }
+            case CONFIG_VALUE_TYPE_INT8: {
+                int8_t *p_check_val = (int8_t*)g_config_val_describe_table[type].check_val;
+                int8_t _val = (*(int8_t*)(val));
+                if (p_check_val[i] == _val) {
+                    not_need_to_correct = 1;
+                    goto _CORRECT_OPERA;
+                }
+                break;
+            }
+            case CONFIG_VALUE_TYPE_UINT32: {
+                uint32_t *p_check_val = (uint32_t*)g_config_val_describe_table[type].check_val;
+                uint32_t _val = (*(uint32_t*)(val));
+                if (p_check_val[i] == _val) {
+                    not_need_to_correct = 1;
+                    goto _CORRECT_OPERA;
+                }
+                break;
+            }
+            case CONFIG_VALUE_TYPE_INT32: {
+                int32_t *p_check_val = (int32_t*)g_config_val_describe_table[type].check_val;
+                int32_t _val = (*(int32_t*)(val));
+                if (p_check_val[i] == _val) {
+                    not_need_to_correct = 1;
+                    goto _CORRECT_OPERA;
+                }
+                break;
+            }
+            case CONFIG_VALUE_TYPE_UINT16: {
+                uint16_t *p_check_val = (uint16_t*)g_config_val_describe_table[type].check_val;
+                uint16_t _val = (*(uint16_t*)(val));
+                if (p_check_val[i] == _val) {
+                    not_need_to_correct = 1;
+                    goto _CORRECT_OPERA;
+                }
+                break;
+            }
+            case CONFIG_VALUE_TYPE_INT16: {
+                int16_t *p_check_val = (int16_t*)g_config_val_describe_table[type].check_val;
+                int16_t _val = (*(int16_t*)(val));
+                if (p_check_val[i] == _val) {
+                    not_need_to_correct = 1;
+                    goto _CORRECT_OPERA;
+                }
+                break;
+            }
+            case CONFIG_VALUE_TYPE_FP32: {
+                fp32 *p_check_val = (fp32*)g_config_val_describe_table[type].check_val;
+                fp32 _val = (*(fp32*)(val));
+                if (p_check_val[i] == _val) {
+                    not_need_to_correct = 1;
+                    goto _CORRECT_OPERA;
+                }
+                break;
+            }
+            case CONFIG_VALUE_TYPE_FP64: {
+                fp64 *p_check_val = (fp64*)g_config_val_describe_table[type].check_val;
+                fp64 _val = (*(fp64*)(val));
+                if (p_check_val[i] == _val) {
+                    not_need_to_correct = 1;
+                    goto _CORRECT_OPERA;
+                }
+                break;
+            }
+            case CONFIG_VALUE_TYPE_UINT64: {
+                uint64_t *p_check_val = (uint64_t*)g_config_val_describe_table[type].check_val;
+                uint64_t _val = (*(uint64_t*)(val));
+                if (p_check_val[i] == _val) {
+                    not_need_to_correct = 1;
+                    goto _CORRECT_OPERA;
+                }
+                break;
+            }
+            case CONFIG_VALUE_TYPE_INT64: {
+                int64_t *p_check_val = (int64_t*)g_config_val_describe_table[type].check_val;
+                int64_t _val = (*(int64_t*)(val));
+                if (p_check_val[i] == _val) {
+                    not_need_to_correct = 1;
+                    goto _CORRECT_OPERA;
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+_CORRECT_OPERA:
+    if (not_need_to_correct == 1) {
+        ret = 0;
+    } else if (not_need_to_correct == 0) {
+        uint8_t *p_default_val = (uint8_t*)(&g_config_default_val);
+        p_default_val += g_config_val_describe_table[type].offset;
+        memcpy(val, p_default_val, g_config_val_describe_table[type].length);
+        ret = 1;
+    }
+
+    return ret;
 }

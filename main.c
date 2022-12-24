@@ -4,18 +4,19 @@
 
 /*
     剩余功能:
-    1. 枚举校验
-    2. 支持自定义数据结构
-    3. 写入时校验
+    1. 支持自定义数据结构
+    2. 写入时校验
 */
 /*范围校验测试用例*/
 static int32_t test_case_range_check(void);
 /*自定义校验以及参数区版本更新测试用例*/
 static int32_t test_case_version_update_custom_check(void);
+/*枚举(匹配相等)校验测试用例*/
+static int32_t test_case_equal_check(void);
 
 int main()
 {
-    test_case_version_update_custom_check();
+    test_case_equal_check();
 
     system("pause");
     return 0;
@@ -85,6 +86,25 @@ static int32_t test_case_version_update_custom_check(void)
     Unit_Config_Correct_Val();                      //correct val
     Unit_Config_Show_Config_Val();                  //show default val
 #endif
+
+    return 0;
+}
+
+/*枚举(匹配相等)校验测试用例*/
+static int32_t test_case_equal_check(void)
+{
+    uint8_t val = 111;
+
+    Unit_Config_Clear();                                //remove file
+    if (Unit_Config_Is_Exist() == 0) {
+        Unit_Config_Creat_By_Default_Val();             //create file
+    }
+    Unit_Config_Show_Config_Val();                      //show default val
+    Unit_Config_Write_Val(CONFIG_TYPE_TEST_UINT8, &val);//write error val
+    Unit_Config_Show_Config_Val();                      //show error val
+    Unit_Config_Correct_Val();                          //correct val
+    Unit_Config_Show_Config_Val();                      //show val affter correct
+    Unit_Config_Correct_Val();                          //correct val again
 
     return 0;
 }

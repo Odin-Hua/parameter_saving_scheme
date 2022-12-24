@@ -34,7 +34,6 @@ typedef enum {
     CONFIG_TYPE_TEST_FP64,
     CONFIG_TYPE_TEST_UINT64,
     CONFIG_TYPE_TEST_INT64,
-    // CONFIG_TYPE_UPDATE_TEST,
     CONFIG_TYPE_NUM,
 } CONFIG_TYPE_e;
 
@@ -60,7 +59,6 @@ typedef struct __packed {
     fp64        test_fp64_t;
     uint64_t    test_uint64_t;
     int64_t     test_int64_t;
-    // fp32        update_test;
 } config_val_t;
 
 /*参数数据描述*/
