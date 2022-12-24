@@ -32,15 +32,15 @@ int64_t     test_int64_t_check_val[4]  = {(int64_t)-0x1FFFFFFFFFFFFFFFLL, (int64
 CONFIG_UNIT_VALUE_DESCRIBE_t g_config_val_describe_table[] = {
     [CONFIG_TYPE_VERSION]      = {CONFIG_VALUE_TYPE_UINT32,    4,   0,  CONFIG_VAL_CHECK_TYPE_CUSTOM_VERSION,   NULL,               0,   Version_CustomCheck_Fun},
     [CONFIG_TYPE_TEST_UINT8]   = {CONFIG_VALUE_TYPE_UINT8,     1,   4,  CONFIG_VAL_CHECK_TYPE_EQUAL,    test_uint8_t_check_val,     10,  EqualCheck_Fun},
-    [CONFIG_TYPE_TEST_INT8]    = {CONFIG_VALUE_TYPE_INT8,      1,   5,  CONFIG_VAL_CHECK_TYPE_RANGE,    test_int8_t_check_val,      2,   RangeCheck_Fun},
-    [CONFIG_TYPE_TEST_UINT32]  = {CONFIG_VALUE_TYPE_UINT32,    4,   6,  CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint32_t_check_val,    1,   RangeCheck_Fun},
-    [CONFIG_TYPE_TEST_INT32]   = {CONFIG_VALUE_TYPE_INT32,     4,   10, CONFIG_VAL_CHECK_TYPE_RANGE,    test_int32_t_check_val,     2,   RangeCheck_Fun},
-    [CONFIG_TYPE_TEST_UINT16]  = {CONFIG_VALUE_TYPE_UINT16,    2,   14, CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint16_t_check_val,    1,   RangeCheck_Fun},
-    [CONFIG_TYPE_TEST_INT16]   = {CONFIG_VALUE_TYPE_INT16,     2,   16, CONFIG_VAL_CHECK_TYPE_RANGE,    test_int16_t_check_val,     2,   RangeCheck_Fun},
-    [CONFIG_TYPE_TEST_FP32]    = {CONFIG_VALUE_TYPE_FP32,      4,   18, CONFIG_VAL_CHECK_TYPE_RANGE,    test_fp32_check_val,        2,   RangeCheck_Fun},
-    [CONFIG_TYPE_TEST_FP64]    = {CONFIG_VALUE_TYPE_FP64,      8,   22, CONFIG_VAL_CHECK_TYPE_RANGE,    test_fp64_check_val,        2,   RangeCheck_Fun},
-    [CONFIG_TYPE_TEST_UINT64]  = {CONFIG_VALUE_TYPE_UINT64,    8,   30, CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint64_t_check_val,    1,   RangeCheck_Fun},
-    [CONFIG_TYPE_TEST_INT64]   = {CONFIG_VALUE_TYPE_INT64,     8,   38, CONFIG_VAL_CHECK_TYPE_RANGE,    test_int64_t_check_val,     2,   RangeCheck_Fun},
+    [CONFIG_TYPE_TEST_INT8]    = {CONFIG_VALUE_TYPE_INT8,      1,   5,  CONFIG_VAL_CHECK_TYPE_RANGE,    test_int8_t_check_val,      4,   RangeCheck_Fun},
+    [CONFIG_TYPE_TEST_UINT32]  = {CONFIG_VALUE_TYPE_UINT32,    4,   6,  CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint32_t_check_val,    2,   RangeCheck_Fun},
+    [CONFIG_TYPE_TEST_INT32]   = {CONFIG_VALUE_TYPE_INT32,     4,   10, CONFIG_VAL_CHECK_TYPE_RANGE,    test_int32_t_check_val,     4,   RangeCheck_Fun},
+    [CONFIG_TYPE_TEST_UINT16]  = {CONFIG_VALUE_TYPE_UINT16,    2,   14, CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint16_t_check_val,    2,   RangeCheck_Fun},
+    [CONFIG_TYPE_TEST_INT16]   = {CONFIG_VALUE_TYPE_INT16,     2,   16, CONFIG_VAL_CHECK_TYPE_RANGE,    test_int16_t_check_val,     4,   RangeCheck_Fun},
+    [CONFIG_TYPE_TEST_FP32]    = {CONFIG_VALUE_TYPE_FP32,      4,   18, CONFIG_VAL_CHECK_TYPE_RANGE,    test_fp32_check_val,        4,   RangeCheck_Fun},
+    [CONFIG_TYPE_TEST_FP64]    = {CONFIG_VALUE_TYPE_FP64,      8,   22, CONFIG_VAL_CHECK_TYPE_RANGE,    test_fp64_check_val,        4,   RangeCheck_Fun},
+    [CONFIG_TYPE_TEST_UINT64]  = {CONFIG_VALUE_TYPE_UINT64,    8,   30, CONFIG_VAL_CHECK_TYPE_RANGE,    test_uint64_t_check_val,    2,   RangeCheck_Fun},
+    [CONFIG_TYPE_TEST_INT64]   = {CONFIG_VALUE_TYPE_INT64,     8,   38, CONFIG_VAL_CHECK_TYPE_RANGE,    test_int64_t_check_val,     4,   RangeCheck_Fun},
     [CONFIG_TYPE_TEST_CUSTOM]  = {CONFIG_VALUE_TYPE_CUSTOM,    18,  46, CONFIG_VAL_CHECK_TYPE_NULL,     NULL,                       0,   NULL},
 };
 /*参数区默认值*/
@@ -364,7 +364,7 @@ static int32_t RangeCheck_Fun(void *config_type, void *val)
     }
 
     CONFIG_VALUE_TYPE_e val_type    = g_config_val_describe_table[type].val_type;
-    int32_t             check_len   = g_config_val_describe_table[type].check_len;
+    int32_t             check_len   = g_config_val_describe_table[type].check_len/2;
     int32_t i, ret, not_need_to_correct = 0;
 
     for (i = 0; i < check_len; i ++) {

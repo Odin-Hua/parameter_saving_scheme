@@ -14,7 +14,7 @@ static int32_t test_case_custom_val(void);
 
 int main()
 {
-    test_case_custom_val();
+    test_case_range_check();
 
     system("pause");
     return 0;
@@ -23,25 +23,25 @@ int main()
 /*范围校验测试用例*/
 static int32_t test_case_range_check(void)
 {
-    config_val_t val = {
-        .version        = (uint32_t)1,
-        .test_uint8_t   = (uint8_t)6,
-        .test_int8_t    = (int8_t)30,
-        .test_uint32_t  = (uint32_t)6,
-        .test_int32_t   = (int32_t)30,
-        .test_uint16_t  = (uint16_t)6,
-        .test_int16_t   = (int16_t)30,
-        .test_fp32_t    = (fp32)30,
-        .test_fp64_t    = (fp64)30,
-        .test_uint64_t  = (uint64_t)6,
-        .test_int64_t   = (int64_t)30,
-    };
+    config_val_t val;
 
     Unit_Config_Clear();                            //remove file
     if (Unit_Config_Is_Exist() == 0) {
         Unit_Config_Creat_By_Default_Val();         //create file
     }
+    Unit_Config_Read_Config_File(&val);             //read file
     Unit_Config_Show_Config_Val();                  //show default val
+    val.version        = (uint32_t)1,
+    val.test_uint8_t   = (uint8_t)6,
+    val.test_int8_t    = (int8_t)30,
+    val.test_uint32_t  = (uint32_t)6,
+    val.test_int32_t   = (int32_t)30,
+    val.test_uint16_t  = (uint16_t)6,
+    val.test_int16_t   = (int16_t)30,
+    val.test_fp32_t    = (fp32)30,
+    val.test_fp64_t    = (fp64)30,
+    val.test_uint64_t  = (uint64_t)6,
+    val.test_int64_t   = (int64_t)30,
     Unit_Config_Write_Config_File(&val);            //write error val
     Unit_Config_Show_Config_Val();                  //show error val
     Unit_Config_Correct_Val();                      //correct val
