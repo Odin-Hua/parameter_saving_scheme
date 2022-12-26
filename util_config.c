@@ -74,7 +74,7 @@ int32_t Unit_Config_Is_Exist(void)
         return 1;
     }
 	file = fopen(CONFIG_PATH, "rb+");
-	if (file > 0) {
+	if (file != NULL) {
         fclose(file);
         g_config_ctrl.exist_flag = 1;
     } else {
@@ -107,7 +107,7 @@ int32_t Unit_Config_Creat_By_Default_Val(void)
     FILE *file;
 
     file = fopen(CONFIG_PATH, "wb+");
-    if (file < 0) {
+    if (file == NULL) {
         printf("%s create file error\n", __func__);
         return -1;
     }
@@ -133,7 +133,7 @@ int32_t Unit_Config_Read_Val(CONFIG_TYPE_e type, void *val)
     }
 
     file = fopen(CONFIG_PATH, "rb+");
-    if (file < 0) {
+    if (file == NULL) {
         printf("%s open file error\n", __func__);
         return -1;
     }
@@ -156,7 +156,7 @@ int32_t Unit_Config_Write_Val(CONFIG_TYPE_e type, void *val)
     }
 
     file = fopen(CONFIG_PATH, "rb+");
-    if (file < 0) {
+    if (file == NULL) {
         printf("%s  open file error\n", __func__);
         return -1;
     }
@@ -179,7 +179,7 @@ int32_t Unit_Config_Read_Config_File(config_val_t *val)
         return -1;
     }
     file = fopen(CONFIG_PATH, "rb+");
-    if (file < 0) {
+    if (file == NULL) {
         printf("%s open file error\n", __func__);
         return -1;
     }
@@ -196,7 +196,7 @@ int32_t Unit_Config_Write_Config_File(config_val_t *val)
     FILE *file;
 
     file = fopen(CONFIG_PATH, "wb+");
-    if (file < 0) {
+    if (file == NULL) {
         printf("%s create file error\n", __func__);
         return -1;
     }
@@ -219,12 +219,12 @@ int32_t Unit_Config_Show_Config_Val(void)
     uint8_t *p_val = (uint8_t*)(&val);
 
     file = fopen(CONFIG_PATH, "rb+");
-    if (file < 0) {
+    if (file == NULL) {
         printf("%s open file error\n", __func__);
         return -1;
     }
     ret = fread(&val, sizeof(config_val_t), 1, file);
-    if (file < 0) {
+    if (ret < 0) {
         printf("%s open file error\n", __func__);
         goto _SHOW_VAL_DONE;
     }
@@ -308,12 +308,12 @@ int32_t Unit_Config_Correct_Val(void)
     int32_t need_to_correct = 0;
 
     file = fopen(CONFIG_PATH, "rb+");
-    if (file < 0) {
+    if (file == NULL) {
         printf("%s open file error\n", __func__);
         return -1;
     }
     ret = fread(&val, sizeof(config_val_t), 1, file);
-    if (file < 0) {
+    if (ret < 0) {
         printf("%s open file error\n", __func__);
         goto _CORRECT_VAL_DONE;
     }
